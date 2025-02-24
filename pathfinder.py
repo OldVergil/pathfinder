@@ -3,11 +3,8 @@ from queue import PriorityQueue
 from field import Field
 
 class Pathfinder:
-    def __init__(self, field):
-        self._field = Field(field)
-
-    directions = [(0,1),(1,0),(0,-1), (-1,0)]
-              #, (1,1),(-1,-1), (1, -1), (-1, 1)]
+    directions = [(0,1),(1,0),(0,-1), (-1,0)] 
+    #[(1,1),(-1,-1), (1, -1), (-1, 1)]
 
     def check_positions_in_bound(self, field, start_position, end_position):
         start_row, start_column = start_position
@@ -23,7 +20,6 @@ class Pathfinder:
     
     def check(self, field, start_position, end_position):
         return self.check_positions_in_bound(field, start_position, end_position) and self.check_cells_can_visited(field, start_position, end_position)
-        
 
     def dijkstra_pathfind(self, field, start_position, end_position):
         history = []
@@ -45,7 +41,7 @@ class Pathfinder:
                 continue
 
             cell.isVisited = True
-            history.append(cell.position)
+            history.append(cell)
 
             if cell.position == end_position:
                 break
@@ -108,7 +104,7 @@ class Pathfinder:
 
         return (field, history)
 
-    def choose_method(self, start_position, end_position, method):
+    def choose_method(self, field, start_position, end_position, method):
         methods = {
             'dijkstra': self.dijkstra_pathfind,
             'bfs': self.bfs
@@ -117,11 +113,10 @@ class Pathfinder:
         if method not in methods:
             raise ValueError(f"Unknown method: {method}")
 
-        return methods[method](self._field.copy(), start_position, end_position)
+        return methods[method](field.copy(), start_position, end_position)
 
-
-    def get_path(self, start_position, end_position, method = 'dijkstra'):
-        field, history = self.choose_method(start_position, end_position, method)
+    def get_path(self, field, start_position, end_position, method = 'dijkstra'):
+        field, history = self.choose_method(field, start_position, end_position, method)
         path = []
         
         if not field:
@@ -133,7 +128,7 @@ class Pathfinder:
             return ([], history)
 
         while end_cell != None:
-            path.append((end_cell.row, end_cell.column))
+            path.append(end_cell)
             end_cell = end_cell.previous
         path.reverse()
         return (path, history)
