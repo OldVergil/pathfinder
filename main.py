@@ -1,7 +1,7 @@
 import pygame as pg
 import sys
 from random import random, randrange
-from bfs import get_path
+from lee_algorithm import Pathfinder
 
 pg.init()
 
@@ -23,11 +23,6 @@ def draw_grid():
 
 def get_mouse_pos():
     grid_x, grid_y = switch_mouse_coord(pg.mouse.get_pos())
-    #r = pg.Rect(get_rect(grid_x, grid_y))
-    #color = pg.Color('red')
-    #if grid[grid_x][grid_y] == 0:
-        #pg.draw.line(screen, color, r.bottomleft, r.topright, TILE // 10)
-        #pg.draw.line(screen, color, r.bottomright, r.topleft, TILE // 10)
     click = pg.mouse.get_pressed()
     return (grid_x, grid_y) if click else False
 
@@ -54,6 +49,7 @@ def draw_path(path):
 def switch_mouse_coord(mouse_coord):
     return (mouse_coord[0] // TILE, mouse_coord[1] // TILE)
 
+pathfinder = Pathfinder(grid)
 start_position = None
 clock = pg.time.Clock()
 while True:
@@ -61,7 +57,7 @@ while True:
     draw_grid()
     mouse_pos = get_mouse_pos()
     if mouse_pos != False and start_position != None:
-        path, history = get_path(grid, start_position, mouse_pos
+        path, history = pathfinder.get_path(start_position, mouse_pos
                                  #,'bfs'
                                  )
         draw_history(history)
