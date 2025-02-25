@@ -78,7 +78,7 @@ class Pathfinder:
         queue = deque([(start_row, start_column)])
         start_cell.isVisited = True
         start_cell.distance = 0
-        history = [start_position]
+        history = [start_cell]
 
         while queue:
             current_row, current_column = queue.popleft()
@@ -99,7 +99,7 @@ class Pathfinder:
                     neighbor_cell.isVisited = True
                     neighbor_cell.distance = current_cell.distance + 1
                     neighbor_cell.previous = current_cell
-                    history.append((new_row, new_column))
+                    history.append(neighbor_cell)
                     queue.append((new_row, new_column))
 
         return (field, history)

@@ -50,42 +50,44 @@ def draw_path(path):
 def switch_mouse_coord(mouse_coord):
     return (mouse_coord[0] // TILE, mouse_coord[1] // TILE)
 
-def draw_circle_at_position(position, color):
+def draw_circle(surface, position, color):
     if position != None:
         r = pg.Rect(get_rect(position[0], position[1]))
-        pg.draw.circle(screen, pg.Color(color), r.center, TILE / 2 - 2)
+        pg.draw.circle(surface, pg.Color(color), r.center, TILE / 2 - 2)
 
-def draw_circles_at_positions(positions_colors):
+def draw_circles(surface, positions_colors):
     for position_color in positions_colors:
         position, color = position_color
-        draw_circle_at_position(position, color)
+        draw_circle(surface, position, color)
+
+def draw_rect(surface, position, color, width = 0):
+    if position != None:
+        pg.draw.rect(surface, pg.Color(color), get_rect(position[0], position[1]), width)
 
 def visualize_algorithm(history, start_position, end_position):
     end = None
-    draw_grid(bg)
     for cell in history:
         screen.blit(bg, (0, 0))
         end = cell
         current_cell = cell
         while current_cell:
-            r = pg.Rect(get_rect(current_cell.row, current_cell.column))
-            pg.draw.circle(screen, pg.Color('yellow'), r.center, TILE / 2 - 2)
+            draw_circle(screen, current_cell.position, 'yellow')
             current_cell = current_cell.previous
-        pg.draw.rect(bg, pg.Color('gray'), get_rect(end.position[0], end.position[1]), 1)
-        draw_circles_at_positions([(start_position,'blue'), (end.position,'red'), (end_position, 'purple')])
+        draw_rect(bg, end.position, 'gray', 1)
+        draw_circles(screen, [(start_position,'blue'), (end.position,'red'), (end_position, 'purple')])
         draw_text()
         pg.display.flip()
         clock.tick(5)
+    draw_grid(bg)
 
 pathfinder = Pathfinder()
 start_position = None
 end_position = None
-visualisation_stop = False
+visualisation_stop = True
 field = Field(grid)
 clock = pg.time.Clock()
 draw_grid(bg)
 while True:
-    #draw_grid(screen)
     screen.blit(bg, (0,0))
     mouse_pos = get_mouse_pos()
     if start_position != None and end_position != None:
@@ -111,9 +113,11 @@ while True:
         if event.type == pg.KEYDOWN and event.key == pg.K_r:
             start_position = None
             end_position = None
-            visualisation_stop = False
+            visualisation_stop = True
             draw_grid(bg)
-    draw_circles_at_positions([(start_position,'blue'), (end_position,'red')])
+        if event.type == pg.KEYDOWN and event.key == pg.K_v:
+            visualisation_stop = False
+    draw_circles(screen, [(start_position,'blue'), (end_position,'red')])
     draw_text()
     pg.display.flip()
     
