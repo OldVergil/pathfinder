@@ -13,7 +13,7 @@ class Field:
         return self._field[row][column]
     
     def set_value(self, row, column, value):
-        self._field[row, column].value = value
+        self._field[row][column].value = value
     
     def copy(self):
         field_copy = Field()

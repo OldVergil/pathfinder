@@ -4,23 +4,15 @@ from random import random, randrange
 from field import Field
 from pathfinder import Pathfinder
 
-pg.init()
-
-TILE = 60
-cols, rows = 25, 15
-
-screen = pg.display.set_mode((cols * TILE, rows * TILE))
-bg = pg.Surface(screen.get_size())
-
-grid = [[0 if random() < 0.2 else randrange(1,10) for row in range(rows)] for col in range(cols)]
-
 def get_rect(x, y):
     return x * TILE + 1, y * TILE + 1, TILE - 2, TILE - 2
 
 def draw_grid(surface):
-    for x in range(cols):
-        for y in range(rows):
-            pg.draw.rect(surface, pg.Color('darkorange' if grid[x][y] == 0 else 'darkgreen'), get_rect(x, y))
+    for i in range(rows):
+        for j in range(cols):
+            color = 'darkorange' if grid[i][j] == 0 else 'darkgreen'
+            coord = swap(i, j)
+            draw_rect(surface, coord, color)
 
 def get_mouse_pos():
     grid_x, grid_y = switch_mouse_coord(pg.mouse.get_pos())
@@ -29,23 +21,18 @@ def get_mouse_pos():
 
 def draw_text():
     font = pg.font.Font(None, 36)
-    for x in range(cols):
-        for y in range(rows):
-            r = pg.Rect(get_rect(x, y))
-            text = font.render(str(grid[x][y]), True, (0, 0, 0))
+    for i in range(rows):
+        for j in range(cols):
+            coord = swap(i, j)
+            r = pg.Rect(get_rect(coord[0], coord[1]))
+            text = font.render(str(grid[i][j]), True, (0, 0, 0))
             text_rect = text.get_rect(center=r.center)
             screen.blit(text, text_rect)
 
-def draw_history(history):
-    for cell in history:
-        position = cell.position
-        pg.draw.rect(screen, pg.Color('gray'), get_rect(position[0], position[1]))
-
 def draw_path(path):
     for cell in path:
-        position = cell.position
-        r = pg.Rect(get_rect(position[0], position[1]))
-        pg.draw.circle(screen, pg.Color('yellow'), r.center, TILE / 2 - 2)
+        coord = swap(cell.position[0], cell.position[1])
+        draw_circle(screen, coord, 'yellow')
 
 def switch_mouse_coord(mouse_coord):
     return (mouse_coord[0] // TILE, mouse_coord[1] // TILE)
@@ -64,34 +51,49 @@ def draw_rect(surface, position, color, width = 0):
     if position != None:
         pg.draw.rect(surface, pg.Color(color), get_rect(position[0], position[1]), width)
 
-def visualize_algorithm(history, start_position, end_position):
-    end = None
+def create_grid():
+    return [[0 if random() < 0.2 else randrange(1,10) for col in range(cols)] for row in range(rows)]
+
+def visualize_algorithm(history, start_coord, end_coord):
+    temp_bg = pg.Surface(bg.get_size())
+    temp_bg.blit(bg, (0,0))
     for cell in history:
-        screen.blit(bg, (0, 0))
-        end = cell
+        screen.blit(temp_bg, (0, 0))
+        last = cell
         current_cell = cell
         while current_cell:
-            draw_circle(screen, current_cell.position, 'yellow')
+            current_cell_coord = swap(current_cell.position[0], current_cell.position[1])
+            draw_circle(screen, current_cell_coord, 'yellow')
             current_cell = current_cell.previous
-        draw_rect(bg, end.position, 'gray', 1)
-        draw_circles(screen, [(start_position,'blue'), (end.position,'red'), (end_position, 'purple')])
+        last_cell_coord = swap(last.position[0], last.position[1])
+        draw_rect(temp_bg, last_cell_coord, 'gray', 1)
+        draw_circles(screen, [(start_coord,'blue'), (last_cell_coord,'purple'), (end_coord, 'red')])
         draw_text()
         pg.display.flip()
-        clock.tick(5)
-    draw_grid(bg)
+        clock.tick(7)
+    draw_grid(temp_bg)
 
+def swap(a, b):
+    return (b, a)
+
+pg.init()
+TILE = 60
+cols, rows = 25, 15
+screen = pg.display.set_mode((cols * TILE, rows * TILE))
+bg = pg.Surface(screen.get_size())
+grid = create_grid()
 pathfinder = Pathfinder()
 start_position = None
 end_position = None
 visualisation_stop = True
+draw_grid(bg)
 field = Field(grid)
 clock = pg.time.Clock()
-draw_grid(bg)
 while True:
     screen.blit(bg, (0,0))
     mouse_pos = get_mouse_pos()
     if start_position != None and end_position != None:
-        path, history = pathfinder.get_path(field, start_position, end_position
+        path, history = pathfinder.get_path(field, swap(start_position[0], start_position[1]), swap(end_position[0], end_position[1])
                                  #,'bfs'
         )
         
@@ -110,13 +112,22 @@ while True:
                 start_position = coord
             elif end_position == None:
                 end_position = coord
-        if event.type == pg.KEYDOWN and event.key == pg.K_r:
+        if event.type == pg.KEYDOWN and event.key == pg.K_c:
             start_position = None
             end_position = None
             visualisation_stop = True
             draw_grid(bg)
+        if event.type == pg.KEYDOWN and event.key == pg.K_r:
+            start_position = None
+            end_position = None
+            visualisation_stop = True
+            grid = create_grid()
+            draw_grid(bg)
+            field = Field(grid)
         if event.type == pg.KEYDOWN and event.key == pg.K_v:
-            visualisation_stop = False
+            if (start_position != None and end_position != None):
+                visualisation_stop = False
+        
     draw_circles(screen, [(start_position,'blue'), (end_position,'red')])
     draw_text()
     pg.display.flip()

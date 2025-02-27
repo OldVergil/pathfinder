@@ -6,6 +6,9 @@ class Pathfinder:
     directions = [(0,1),(1,0),(0,-1), (-1,0)] 
     #[(1,1),(-1,-1), (1, -1), (-1, 1)]
 
+    def function(self, start_position, end_position):
+        return abs(start_position[0] - end_position[0]) + abs(start_position[1] - end_position[1])
+
     def check_positions_in_bound(self, field, start_position, end_position):
         start_row, start_column = start_position
         end_row, end_column = end_position
@@ -20,7 +23,7 @@ class Pathfinder:
     
     def check(self, field, start_position, end_position):
         return self.check_positions_in_bound(field, start_position, end_position) and self.check_cells_can_visited(field, start_position, end_position)
-
+    
     def dijkstra_pathfind(self, field, start_position, end_position):
         history = []
         start_row, start_column = start_position
@@ -64,7 +67,8 @@ class Pathfinder:
                 if nextDistance < neighbour_cell.distance:
                     neighbour_cell.distance = nextDistance
                     neighbour_cell.previous = cell
-                    p_queue.put((neighbour_cell.distance, neighbour_cell))
+                    priority = neighbour_cell.distance + self.function(neighbour_cell.position, end_position)
+                    p_queue.put((priority, neighbour_cell))
                     
         return (field,history)
 

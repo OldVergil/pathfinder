@@ -12,6 +12,7 @@ class Cell:
         self.previous = previous
         self.isVisited = isVisited
         self.canVisit = canVisit
+        self.screenCoord = (column, row )
 
     def copy(self):
         return Cell(
